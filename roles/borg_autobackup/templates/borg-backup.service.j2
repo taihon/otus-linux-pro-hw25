@@ -1,0 +1,15 @@
+[Unit]
+Description=Automated Borg Backup
+After=network.target
+
+[Service]
+Type=oneshot
+Environment="BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes"
+Environment="BORG_PASSPHRASE=Str0nkP@s$"
+ExecStart=/bin/bash -c \
+"borg create -C zstd -v borg@{{ backup_central_server }}:backups::{{ hostvars[inventory_hostname]['backup_prefix'] }}-$(date +%%Y%%m%%d_%%H%%M%%S) {{hostvars[inventory_hostname]['backup_folder']}}"
+ExecStart=/bin/bash -c \
+"borg prune -v --list --keep-daily 90 --keep-monthly 9 borg@{{ backup_central_server }}:backups"
+
+[Install]
+WantedBy=multi-user.target
